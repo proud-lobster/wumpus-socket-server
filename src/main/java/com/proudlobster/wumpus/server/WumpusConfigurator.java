@@ -15,8 +15,8 @@ public class WumpusConfigurator implements Configurator {
     private final ServerEndpointConfig.Configurator endpointConfig;
     private final String endpointPath;
 
-    public static void configure(final ServletContextHandler handler, final SessionHandler sessions) {
-        JakartaWebSocketServletContainerInitializer.configure(handler, new WumpusConfigurator(sessions, "/socket"));
+    public static void configure(final ServletContextHandler handler, final SessionHandler sessions, final String path) {
+        JakartaWebSocketServletContainerInitializer.configure(handler, new WumpusConfigurator(sessions, path));
     }
 
     public WumpusConfigurator(final SessionHandler sessions, final String endpointPath) {

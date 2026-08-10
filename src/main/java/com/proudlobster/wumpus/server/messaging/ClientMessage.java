@@ -1,9 +1,7 @@
 package com.proudlobster.wumpus.server.messaging;
 
 import java.util.Arrays;
-import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.function.UnaryOperator;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;

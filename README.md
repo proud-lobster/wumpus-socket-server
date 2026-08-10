@@ -1,1 +1,1 @@
-# wumpus-socket-server
+# Wumpus Socket Server

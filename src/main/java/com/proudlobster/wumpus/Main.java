@@ -1,12 +1,10 @@
 package com.proudlobster.wumpus;
 
-import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
-import org.eclipse.jetty.server.Server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.proudlobster.wumpus.server.SessionHandler;
-import com.proudlobster.wumpus.server.WumpusConfigurator;
+import com.proudlobster.wumpus.server.WumpusServer;
 import com.proudlobster.wumpus.server.messaging.ClientMessage;
 import com.proudlobster.wumpus.server.messaging.PingHandler;
 
@@ -14,7 +12,7 @@ public interface Main {
 
     Logger LOG = LoggerFactory.getLogger(Main.class);
 
-    public static void main(String... args) {
+    public static void main(String... args) throws Exception {
         LOG.info("Wumpus Socket Server");
         LOG.info("by Proud Lobster Games");
 
@@ -29,19 +27,9 @@ public interface Main {
         // TODO
         ClientMessage.registerHandler(ClientMessage.Directive.PING, PingHandler.create(sessions));
 
-        LOG.info("Configuring server...");
-        final Server server = new Server(8080);
-        final ServletContextHandler handler = new ServletContextHandler("/");
-        server.setHandler(handler);
-        WumpusConfigurator.configure(handler, sessions);
-
         LOG.info("Starting server...");
-        try {
-            server.start();
-        } catch (Exception e) {
-            LOG.error("Could not start server.", e);
-            System.exit(1);
-        }
+        final WumpusServer server = new WumpusServer(8080, "/socket", sessions);
+        server.start();
 
         LOG.info("Starting outbound thread...");
         // TODO stream consumer that does the send to sessions
