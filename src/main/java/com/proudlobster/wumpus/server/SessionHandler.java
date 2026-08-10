@@ -5,6 +5,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.proudlobster.wumpus.server.messaging.ClientMessage;
+
 import jakarta.websocket.Session;
 
 public class SessionHandler {
