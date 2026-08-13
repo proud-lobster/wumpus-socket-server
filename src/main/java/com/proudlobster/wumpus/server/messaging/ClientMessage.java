@@ -41,7 +41,8 @@ public interface ClientMessage {
     }
 
     Logger LOG = LoggerFactory.getLogger(ClientMessage.class);
-    String DELIMITER = ((char) 0x1e) + "";
+    String DELIMITER = "|";
+//    String DELIMITER = ((char) 0x1e) + "";
     String PAYLOAD_DELIMITER = " ";
 
     public static void registerHandler(final Directive directive, final Handler handler) {
