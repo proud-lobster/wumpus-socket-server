@@ -54,6 +54,12 @@ public class SessionHandler {
         }
     }
 
+    public void closeAll() {
+        sessions.values()
+                .stream()
+                .forEach(this::close);
+    }
+
     public boolean isOpen(final String sessionId) {
         return sessions.get(sessionId).isOpen();
     }

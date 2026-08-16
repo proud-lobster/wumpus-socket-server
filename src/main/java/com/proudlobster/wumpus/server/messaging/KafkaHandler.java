@@ -44,7 +44,7 @@ public class KafkaHandler implements ClientMessage.Handler, Closeable {
 
     @Override
     public void close() throws IOException {
-        producerRef.get().close();
+        getProducer().close();
     }
 
 }
