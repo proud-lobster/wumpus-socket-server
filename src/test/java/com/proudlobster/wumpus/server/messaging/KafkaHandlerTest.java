@@ -3,6 +3,7 @@ package com.proudlobster.wumpus.server.messaging;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Properties;
@@ -66,7 +67,7 @@ public class KafkaHandlerTest {
     }
 
     @Test
-    public void testKafkaHandler() {
+    public void testKafkaHandler() throws IOException {
         final KafkaHandler handler = new KafkaHandler(TOPIC, BASE_PROPS);
         final ClientMessage message = ClientMessage.Directive.LOGIN.create("sessionId", "payload");
         final CompletableFuture<ConsumerRecords<String, String>> futureRecords = records();
@@ -77,6 +78,6 @@ public class KafkaHandlerTest {
         assertFalse(records.isEmpty());
         final ConsumerRecord<String, String> record = records.iterator().next();
         assertEquals(message.whole(), record.value());
-
+        handler.close();
     }
 }

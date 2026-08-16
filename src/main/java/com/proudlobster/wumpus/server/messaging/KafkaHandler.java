@@ -1,16 +1,16 @@
 package com.proudlobster.wumpus.server.messaging;
 
-import java.io.FileInputStream;
-import java.io.InputStream;
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.Properties;
-
+import java.util.concurrent.atomic.AtomicReference;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class KafkaHandler implements ClientMessage.Handler {
+public class KafkaHandler implements ClientMessage.Handler, Closeable {
 
     private static final Logger LOG = LoggerFactory.getLogger(KafkaHandler.class);
     private static final Callback CALLBACK = (metadata, exception) -> {
@@ -21,29 +21,30 @@ public class KafkaHandler implements ClientMessage.Handler {
 
     private final Properties props;
     private final String topic;
+    private final AtomicReference<KafkaProducer<String, String>> producerRef;
 
     public KafkaHandler(final String topic, final Properties props) {
         this.topic = topic;
         this.props = new Properties();
         this.props.putAll(props);
+        this.producerRef = new AtomicReference<>();
     }
 
     private KafkaProducer<String, String> getProducer() {
-        if (props.isEmpty()) {
-            try (InputStream input = new FileInputStream("kafka.properties")) {
-                props.load(input);
-            } catch (Exception e) {
-                LOG.error("Error loading kafka.properties", e);
-            }
+        if (producerRef.get() == null) {
+            producerRef.set(new KafkaProducer<>(props));
         }
-        return new KafkaProducer<>(props);
+        return producerRef.get();
     }
 
     @Override
     public void accept(ClientMessage t) {
-        try (KafkaProducer<String, String> producer = getProducer()) {
-            producer.send(new ProducerRecord<>(topic, "0", t.whole()), CALLBACK);
-        }
+        getProducer().send(new ProducerRecord<>(topic, "0", t.whole()), CALLBACK);
+    }
+
+    @Override
+    public void close() throws IOException {
+        producerRef.get().close();
     }
 
 }
