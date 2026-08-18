@@ -3,6 +3,7 @@ package com.proudlobster.wumpus.server.messaging;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -12,6 +13,7 @@ import java.util.stream.StreamSupport;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.common.TopicPartition;
 
 public class KafkaListener implements Supplier<List<ClientMessage>>, AutoCloseable {
 
@@ -35,17 +37,23 @@ public class KafkaListener implements Supplier<List<ClientMessage>>, AutoCloseab
         return consumerRef.get();
     }
 
+    public void subscribe() {
+        final TopicPartition tp = new TopicPartition(topic, 0);
+        getConsumer().assign(Collections.singletonList(tp));
+        getConsumer().seekToBeginning(Collections.singletonList(tp));
+    }
+
     @Override
     public List<ClientMessage> get() {
-        getConsumer().subscribe(Collections.singletonList(topic));
-        while (open.get()) {
+        final List<ClientMessage> msgs = new LinkedList<>();
+        while (open.get() && msgs.isEmpty()) {
             final ConsumerRecords<String, String> records = getConsumer().poll(Duration.ofSeconds(1));
-            return StreamSupport.stream(records.spliterator(), false)
+            StreamSupport.stream(records.spliterator(), false)
                     .map(ConsumerRecord::value)
                     .map(ClientMessage::create)
-                    .toList();
+                    .forEach(msgs::add);
         }
-        return List.of();
+        return msgs;
     }
 
     @Override

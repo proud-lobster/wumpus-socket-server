@@ -20,6 +20,7 @@ public class KafkaListenerWorker implements Runnable, AutoCloseable {
 
     @Override
     public void run() {
+        listener.subscribe();
         while (open.get()) {
             listener.get()
                     .stream()
