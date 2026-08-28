@@ -1,6 +1,7 @@
 package com.proudlobster.wumpus.server;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,16 +20,6 @@ public class App {
     private static final String DEFAULT_SERVER_PATH = "/socket";
     private static final String KAFKA_PROP_PREFIX = "kafka.";
 
-    /**
-     * server.id: unique identifier for this server instance, used to identify
-     * sessions that belong to this server
-     * server.port: port to listen on for websocket connections
-     * server.path: path to listen on for websocket connections
-     * kafka.*: properties for connecting to Kafka
-     * topics.account: account topic
-     * topics.command: command topic
-     * topics.outbound: outbound topic
-     */
     private final Properties APP_PROPS;
 
     private KafkaHandler accountHandler;
@@ -44,15 +35,17 @@ public class App {
 
     public void start() throws Exception {
         final String serverId = APP_PROPS.getProperty("server.id", DEFAULT_SERVER_ID);
-        LOG.info("Starting server (ID: {0})...", serverId);
+        LOG.info("Starting server (ID: {})...", serverId);
         this.sessions = new SessionHandler(serverId);
 
         LOG.info("Registering handlers...");
         final Properties kafkaProps = new Properties();
-        APP_PROPS.stringPropertyNames().stream()
-                .filter(k -> k.startsWith(KAFKA_PROP_PREFIX))
-                .map(k -> k.substring(KAFKA_PROP_PREFIX.length()))
-                .forEach(k -> kafkaProps.setProperty(k, APP_PROPS.getProperty(k)));
+        APP_PROPS.entrySet().stream()
+                .map(e -> Map.entry(e.getKey().toString(), e.getValue().toString()))
+                .filter(e -> e.getKey().startsWith(KAFKA_PROP_PREFIX))
+                .filter(e -> e.getValue() != null)
+                .map(e -> Map.entry(e.getKey().substring(KAFKA_PROP_PREFIX.length()), e.getValue()))
+                .forEach(e -> kafkaProps.setProperty(e.getKey(), e.getValue()));
         ClientMessage.registerHandler(ClientMessage.Directive.PING, PingHandler.create(sessions));
         this.accountHandler = new KafkaHandler(APP_PROPS.getProperty("topics.account"), kafkaProps);
         ClientMessage.registerHandler(ClientMessage.Directive.LOGIN, accountHandler);
@@ -69,7 +62,7 @@ public class App {
         this.server.start();
 
         final String outboundTopicName = APP_PROPS.getProperty("topics.outbound") + "." + serverId;
-        LOG.info("Starting outbound thread (Topic: {0})...", outboundTopicName);
+        LOG.info("Starting outbound thread (Topic: {})...", outboundTopicName);
         this.worker = new KafkaListenerWorker(outboundTopicName, kafkaProps, sessions);
         final Thread outbound = new Thread(worker);
         outbound.run();
