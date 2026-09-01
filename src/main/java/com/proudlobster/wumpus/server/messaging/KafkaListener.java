@@ -53,13 +53,17 @@ public class KafkaListener implements Supplier<List<ClientMessage>>, AutoCloseab
                     .map(ClientMessage::create)
                     .forEach(msgs::add);
         }
+
+        if (!open.get()) {
+            getConsumer().close();
+        }
+
         return msgs;
     }
 
     @Override
     public void close() throws IOException {
         open.set(false);
-        getConsumer().close();
     }
 
 }

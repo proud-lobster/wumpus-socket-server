@@ -65,7 +65,7 @@ public class App {
         LOG.info("Starting outbound thread (Topic: {})...", outboundTopicName);
         this.worker = new KafkaListenerWorker(outboundTopicName, kafkaProps, sessions);
         final Thread outbound = new Thread(worker);
-        outbound.run();
+        outbound.start();
     }
 
     public void stop() {
