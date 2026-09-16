@@ -84,7 +84,7 @@
         <repository>
             <id>proud-lobster</id>
             <name>Proud Lobster on GitHub Packages</name>
-            <url>https://maven.pkg.github.com/proud-lobster/packages/</url>
+            <url>https://maven.pkg.github.com/proud-lobster/wumpus-socket-server/</url>
         </repository>
     </distributionManagement>
 </project>
