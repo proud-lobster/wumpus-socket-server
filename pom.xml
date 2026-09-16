@@ -80,4 +80,11 @@
         </dependency>
     </dependencies>
 
+    <distributionManagement>
+        <repository>
+            <id>proud-lobster</id>
+            <name>Proud Lobster on GitHub Packages</name>
+            <url>https://maven.pkg.github.com/proud-lobster/packages/</url>
+        </repository>
+    </distributionManagement>
 </project>
