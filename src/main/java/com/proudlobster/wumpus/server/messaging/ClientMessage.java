@@ -41,8 +41,7 @@ public interface ClientMessage {
     }
 
     Logger LOG = LoggerFactory.getLogger(ClientMessage.class);
-    String DELIMITER = "|";
-//    String DELIMITER = ((char) 0x1e) + "";
+    String DELIMITER = ((char) 0x1e) + "";
     String PAYLOAD_DELIMITER = " ";
 
     public static void registerHandler(final Directive directive, final Handler handler) {
@@ -50,12 +49,20 @@ public interface ClientMessage {
     }
 
     public static ClientMessage create(final String sessionId, final Directive directive, final String payload) {
-        final String[] parts = { sessionId.toString(), directive.name(), payload };
+        final String[] parts = {
+                sessionId.toString(),
+                String.valueOf(System.currentTimeMillis()),
+                directive.name(),
+                payload
+        };
         return () -> parts;
     }
 
     public static ClientMessage create(final String whole) {
         final String[] parts = whole.split(Pattern.quote(DELIMITER));
+        if (parts.length != 4) {
+            throw new IllegalArgumentException("Invalid client message: " + whole);
+        }
         return () -> parts;
     }
 
@@ -73,12 +80,16 @@ public interface ClientMessage {
         return part(0);
     }
 
+    default long timestamp() {
+        return Long.parseLong(part(1));
+    }
+
     default Directive directive() {
-        return Directive.valueOf(part(1).toUpperCase());
+        return Directive.valueOf(part(2).toUpperCase());
     }
 
     default String payload() {
-        return part(2);
+        return part(3);
     }
 
     default String[] payloadParts() {

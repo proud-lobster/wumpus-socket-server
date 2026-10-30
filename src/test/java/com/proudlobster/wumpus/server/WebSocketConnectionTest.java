@@ -82,4 +82,6 @@ public class WebSocketConnectionTest {
 
         app.stop();
     }
+
+    // TODO: Add test for invalid message handling
 }
